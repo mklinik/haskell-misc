@@ -41,8 +41,8 @@ printGameState (moves, player) =
 playerMove :: GameTree -> IO Integer
 playerMove (GameTree state nextMoves) = do
     putStrLn $ printGameState state
-    putStrLn $ show $ map rateTree nextMoves
-    putStrLn $ "please input number from 1 to " ++ (show $ length nextMoves) ++ " (0 to exit)"
+    -- putStrLn $ show $ map rateTree nextMoves -- debug
+    putStrLn $ "please input a number from 1 to " ++ (show $ length nextMoves) ++ " (0 to exit)"
     maybeLine <- readline "> "
     case maybeLine of 
         Nothing   -> return 0
@@ -61,7 +61,7 @@ computerMove (GameTree state nextMoves) = do
     let num = case elemIndex 1 (map rateTree nextMoves) of
             Nothing -> 1 -- if there is no move where computer wins, pick 1
             Just n -> n + 1 -- index + 1 = the number of matches to pick
-    putStrLn $ show $ map rateTree nextMoves
+    -- putStrLn $ show $ map rateTree nextMoves -- debug
     putStrLn $ "computer picks " ++ (show num)
     return $ fromIntegral num
 
