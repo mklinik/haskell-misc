@@ -65,19 +65,22 @@ validRGB (RGB r g b) = validColor r && validColor g && validColor b
 
 validImage :: Image -> Maybe (Int, Int)
 validImage [] = Just (0, 0)
-validImage (r:rows) = case validRow r 0 of
-  Just numColums -> validImage_ rows (numColums, 1)
-  Nothing -> Nothing
+validImage rows =
+  foldl validRow (Just (length $ head rows, 0)) rows
   where
-    validImage_ :: Image -> (Int, Int) -> Maybe (Int, Int)
-    validImage_ [] x = Just x
-    validImage_ (r:rows) (numColumns, numRows) =
-      case validRow r 0 of
-        Just numColumns_ -> if numColumns == numColumns_ then validImage_ rows (numColumns, numRows + 1) else Nothing
-        Nothing -> Nothing
-    validRow :: [RGB] -> Int -> Maybe Int
-    validRow [] n = Just n
-    validRow (p:pixels) n = if validRGB p then validRow pixels (n+1) else Nothing
+
+    -- checks and counts rows
+    validRow :: Maybe (Int, Int) -> [RGB] -> Maybe (Int, Int)
+    validRow m pixels = do
+      (expectedPixelCount, rowsSoFar) <- m
+      pixelCount <- foldl validPixel (Just 0) pixels
+      if pixelCount == expectedPixelCount
+        then Just (expectedPixelCount, rowsSoFar + 1)
+        else Nothing
+
+    -- checks and counts pixels
+    validPixel :: Maybe Int -> RGB -> Maybe Int
+    validPixel m rgb = m >>= (\num -> if validRGB rgb then Just (num+1) else Nothing)
 
 ppmHeader :: (Int,Int) -> String
 ppmHeader xy = tODO ""
