@@ -58,13 +58,26 @@ tODO = id
 -- ------------ --
 
 validColor :: Color -> Bool
-validColor c = tODO False
+validColor c = c >= 0 && c <= 255
 
 validRGB :: RGB -> Bool
-validRGB r = tODO False
+validRGB (RGB r g b) = validColor r && validColor g && validColor b
 
 validImage :: Image -> Maybe (Int, Int)
-validImage i = tODO Nothing
+validImage [] = Just (0, 0)
+validImage (r:rows) = case validRow r 0 of
+  Just numColums -> validImage_ rows (numColums, 1)
+  Nothing -> Nothing
+  where
+    validImage_ :: Image -> (Int, Int) -> Maybe (Int, Int)
+    validImage_ [] x = Just x
+    validImage_ (r:rows) (numColumns, numRows) =
+      case validRow r 0 of
+        Just numColumns_ -> if numColumns == numColumns_ then validImage_ rows (numColumns, numRows + 1) else Nothing
+        Nothing -> Nothing
+    validRow :: [RGB] -> Int -> Maybe Int
+    validRow [] n = Just n
+    validRow (p:pixels) n = if validRGB p then validRow pixels (n+1) else Nothing
 
 ppmHeader :: (Int,Int) -> String
 ppmHeader xy = tODO ""
