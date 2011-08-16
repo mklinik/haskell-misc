@@ -83,13 +83,13 @@ validImage rows =
     validPixel m rgb = m >>= (\num -> if validRGB rgb then (^-^) (num+1) else (>.<) )
 
 ppmHeader :: (Int,Int) -> String
-ppmHeader xy = tODO ""
+ppmHeader (x, y) = "P6 " ++ (show x) ++ " " ++ (show y) ++ " 255\n"
 
 encodeRGB :: RGB -> String
-encodeRGB r = tODO ""
+encodeRGB (RGB r g b) = [chr r, chr g, chr b]
 
 ppmData :: Image -> String
-ppmData i = tODO ""
+ppmData image = concatMap (concatMap encodeRGB) image
 
 writePPM :: FilePath -> Image -> IO ()
 writePPM path i = tODO (return ())
