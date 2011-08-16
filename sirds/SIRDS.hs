@@ -157,7 +157,9 @@ validLink (Unlinked _) = True
 -- The `better' operator for links. Use pattern matching, recall
 -- the standard recipe!
 (>%>) :: Link -> Link -> Bool
-c1 >%> c2 = tODO False
+Unlinked _   >%> _          = False
+_            >%> Unlinked _ = True
+Linked l1 r1 >%> Linked l2 r2 = (r1 - l1) < (r2 - l2)
 
 -- The Links structure with no links is just the empty finite map.
 -- This function is given.
