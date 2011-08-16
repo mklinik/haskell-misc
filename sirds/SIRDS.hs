@@ -75,12 +75,12 @@ validImage rows =
       (expectedPixelCount, rowsSoFar) <- m
       pixelCount <- foldl validPixel (Just 0) pixels
       if pixelCount == expectedPixelCount
-        then Just (expectedPixelCount, rowsSoFar + 1)
-        else Nothing
+        then (^-^) (expectedPixelCount, rowsSoFar + 1)
+        else (>.<)
 
     -- checks and counts pixels
     validPixel :: Maybe Int -> RGB -> Maybe Int
-    validPixel m rgb = m >>= (\num -> if validRGB rgb then Just (num+1) else Nothing)
+    validPixel m rgb = m >>= (\num -> if validRGB rgb then (^-^) (num+1) else (>.<) )
 
 ppmHeader :: (Int,Int) -> String
 ppmHeader xy = tODO ""
@@ -292,3 +292,6 @@ main =
     writePPM "doubleChess.ppm" i -- prints encoded chess pattern SIRDS
     writePPM "doubleChessDecoded.ppm" (decode i) -- prints decoded chess pattern SIRDS
 
+
+(^-^) = Just
+(>.<) = Nothing
