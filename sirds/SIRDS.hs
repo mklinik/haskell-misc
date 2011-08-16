@@ -167,10 +167,14 @@ noLinks :: Links
 noLinks = M.empty
 
 add :: Link -> Links -> Links
-add c cs = tODO cs
+add (Unlinked _) links = links
+add (Linked l r) links =
+  M.insert (r, R) l $ M.insert (l, L) r links
 
 del :: Link -> Links -> Links
-del c cs = tODO cs
+del (Unlinked _) links = links
+del (Linked l r) links =
+  M.delete (r, R) $ M.delete (l, L) links
 
 query :: Link -> Dir -> Links -> Link
 query c d cs = tODO (Unlinked 0)
