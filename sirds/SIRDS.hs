@@ -177,7 +177,18 @@ del (Linked l r) links =
   M.delete (r, R) $ M.delete (l, L) links
 
 query :: Link -> Dir -> Links -> Link
-query c d cs = tODO (Unlinked 0)
+query (Unlinked p) dir links = lookupLink p dir links
+query (Linked _ r) L links = lookupLink r L links
+query (Linked l _) R links = lookupLink l R links
+
+lookupLink :: Int -> Dir -> Links -> Link
+lookupLink p dir links = case M.lookup (p, dir) links of
+  Just p_ -> mkLink p p_
+    where
+      mkLink l r
+        | l < r = Linked l r
+        | otherwise = Linked r l
+  Nothing -> Unlinked p
 
 link :: Link -> Links -> Links
 link c cs = tODO cs
