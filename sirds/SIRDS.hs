@@ -92,7 +92,10 @@ ppmData :: Image -> String
 ppmData image = concatMap (concatMap encodeRGB) image
 
 writePPM :: FilePath -> Image -> IO ()
-writePPM path i = tODO (return ())
+writePPM path image =
+  case validImage image of
+    Nothing -> putStrLn "writePPM: invalid image"
+    Just imageDimensions -> writeBinaryFile path $ (ppmHeader imageDimensions) ++ (ppmData image)
 
 -- The following functions are utilities for image computation.
 -- They're not relevant for the assignment, only if you want to
