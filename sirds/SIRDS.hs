@@ -191,7 +191,13 @@ lookupLink p dir links = case M.lookup (p, dir) links of
   Nothing -> Unlinked p
 
 link :: Link -> Links -> Links
-link c cs = tODO cs
+link (Unlinked _) links = links
+link l links
+  | (l >%> left) && (l >%> right) = add l $ del right $ del left links
+  | otherwise = links
+    where
+      left = query l L links
+      right = query l R links
 
 -- --------------------- --
 -- Stereogram generation --
