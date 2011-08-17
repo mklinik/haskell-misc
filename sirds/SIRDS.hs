@@ -209,7 +209,7 @@ link l links
 -- can lead to strange results.
 
 dpi :: Double
-dpi = 72.0         -- typical screen resolution (pixels per inch)
+dpi = 96.0         -- typical screen resolution (pixels per inch)
 
 e :: Double
 e = 2.5 * dpi      -- eye distance in pixels
@@ -219,10 +219,21 @@ d = 3.0            -- "distance" between projection plane and base
                    -- plane of the 3D image
 
 separation :: Double -> Int
-separation z = tODO 0
+separation z = round $ e * (d - z) / (2 * d - z)
 
 sirdsLine :: [Height] -> Links
-sirdsLine hs = tODO noLinks
+sirdsLine hs = sirdsLine_ (length hs) 0 hs noLinks
+
+sirdsLine_ :: Int -> Int -> [Height] -> Links -> Links
+sirdsLine_ _ _ [] links = links
+sirdsLine_ width x (h:hs) links =
+  let s = separation h
+      left = x - s
+      right = x + s
+  in
+    if left > 0 && right < (width - 1)
+      then sirdsLine_ width (x+1) hs $ add (Linked left right) links
+      else sirdsLine_ width (x+1) hs links
 
 -- Assign random colors to the points of a line, but respect
 -- the computed links: linked points should get the same color.
