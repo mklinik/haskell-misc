@@ -42,8 +42,13 @@ bar = assign "foo" 100 >>> readOut "foo"
   -- y <- readOut "bar"
   -- return (x+y)
 
+(>>>=) :: (Env -> (Int, Env)) -> (Int -> Env -> (Int, Env)) -> (Env -> (Int, Env))
 f >>>= g = \s -> let (x, s1) = f s in g x s1
+
+(>>>) :: (Env -> (a, Env)) -> (Env -> (b, Env)) -> (Env -> (b, Env))
 f >>>  g = \s -> let (_, s1) = f s in g   s1
+
+myReturn :: Int -> Env -> (Int, Env)
 myReturn x = \s -> (x, s)
 
 -- instance Monad ??? where
