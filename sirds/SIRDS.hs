@@ -177,27 +177,31 @@ del (Linked l r) links =
   M.delete (r, R) $ M.delete (l, L) links
 
 query :: Link -> Dir -> Links -> Link
-query (Unlinked p) dir links = lookupLink p dir links
-query (Linked _ r) L links = lookupLink r L links
-query (Linked l _) R links = lookupLink l R links
 
-lookupLink :: Int -> Dir -> Links -> Link
-lookupLink p dir links = case M.lookup (p, dir) links of
-  Just p_ -> mkLink p p_
-    where
-      mkLink l r
-        | l < r = Linked l r
-        | otherwise = Linked r l
-  Nothing -> Unlinked p
+query (Linked _ r) L links = case M.lookup (r, R) links of
+  Just l -> Linked l r
+  otherwise -> Unlinked r
+
+query (Unlinked r) L links = case M.lookup (r, R) links of
+  Just l -> Linked l r
+  otherwise -> Unlinked r
+
+query (Linked l _) R links = case M.lookup (l, L) links of
+  Just r -> Linked l r
+  otherwise -> Unlinked l
+
+query (Unlinked l) R links = case M.lookup (l, L) links of
+  Just r -> Linked l r
+  otherwise -> Unlinked l
 
 link :: Link -> Links -> Links
 link (Unlinked _) links = links
-link l links
-  | (l >%> left) && (l >%> right) = add l $ del right $ del left links
+link newLink links
+  | (newLink >%> left) && (newLink >%> right) = add newLink $ del right $ del left links
   | otherwise = links
     where
-      left = query l L links
-      right = query l R links
+      left  = query newLink L links
+      right = query newLink R links
 
 -- --------------------- --
 -- Stereogram generation --
@@ -209,7 +213,7 @@ link l links
 -- can lead to strange results.
 
 dpi :: Double
-dpi = 96.0         -- typical screen resolution (pixels per inch)
+dpi = 72.0         -- typical screen resolution (pixels per inch)
 
 e :: Double
 e = 2.5 * dpi      -- eye distance in pixels
@@ -225,15 +229,15 @@ sirdsLine :: [Height] -> Links
 sirdsLine hs = sirdsLine_ (length hs) 0 hs noLinks
 
 sirdsLine_ :: Int -> Int -> [Height] -> Links -> Links
-sirdsLine_ _ _ [] links = links
+sirdsLine_ _     _ []     links = links
 sirdsLine_ width x (h:hs) links =
-  let s = separation h
-      left = x - s
-      right = x + s
-  in
-    if left > 0 && right < (width - 1)
-      then sirdsLine_ width (x+1) hs $ add (Linked left right) links
-      else sirdsLine_ width (x+1) hs links
+  if left >= 0 && right <= (width - 1)
+    then sirdsLine_ width (x+1) hs $ link (Linked left right) links
+    else sirdsLine_ width (x+1) hs links
+  where
+    s     = separation h
+    left  = x - (s `div` 2)
+    right = x - (s `div` 2) + s
 
 -- Assign random colors to the points of a line, but respect
 -- the computed links: linked points should get the same color.
