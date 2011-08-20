@@ -63,24 +63,18 @@ validColor c = c >= 0 && c <= 255
 validRGB :: RGB -> Bool
 validRGB (RGB r g b) = validColor r && validColor g && validColor b
 
+validLine :: [RGB] -> Bool
+validLine = all validRGB
+
 validImage :: Image -> Maybe (Int, Int)
 validImage [] = Just (0, 0)
-validImage rows =
-  foldl validRow (Just (length $ head rows, 0)) rows
+validImage image =
+  if all (\l -> length l == lineLength && validLine l) image
+    then Just (lineLength, numLines)
+    else Nothing
   where
-
-    -- checks and counts rows
-    validRow :: Maybe (Int, Int) -> [RGB] -> Maybe (Int, Int)
-    validRow m pixels = do
-      (expectedPixelCount, rowsSoFar) <- m
-      pixelCount <- foldl validPixel (Just 0) pixels
-      if pixelCount == expectedPixelCount
-        then (^-^) (expectedPixelCount, rowsSoFar + 1)
-        else (>.<)
-
-    -- checks and counts pixels
-    validPixel :: Maybe Int -> RGB -> Maybe Int
-    validPixel m rgb = m >>= (\num -> if validRGB rgb then (^-^) (num+1) else (>.<) )
+    lineLength = length (head image)
+    numLines = length image
 
 validHeightLine = all (\x -> x >= 0.0 && x <= 1.0)
 validHeightMap = all validHeightLine
