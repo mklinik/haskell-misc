@@ -82,6 +82,9 @@ validImage rows =
     validPixel :: Maybe Int -> RGB -> Maybe Int
     validPixel m rgb = m >>= (\num -> if validRGB rgb then (^-^) (num+1) else (>.<) )
 
+validHeightLine = all (\x -> x >= 0.0 && x <= 1.0)
+validHeightMap = all validHeightLine
+
 ppmHeader :: (Int,Int) -> String
 ppmHeader (x, y) = "P6 " ++ (show x) ++ " " ++ (show y) ++ " 255\n"
 
@@ -121,6 +124,9 @@ translate (dx,dy) f (x,y) = f (x - dx, y - dy)
 -- z-scale a heightmap generator
 zscale :: Double -> Gen Double -> Gen Double
 zscale s f (x,y) = s * f (x,y)
+
+stripes :: Int -> Gen Height
+stripes n (x,_) = fromIntegral $ (x `div` n) `mod` 2
 
 -- Generates Figure 2.
 chess :: Image
@@ -313,7 +319,13 @@ doubleChess = toImage (maxX, maxY) doubleChess'
 doubleChess' :: Gen Double
 doubleChess' = zscale 0.8 (translate (25,25) (chess' 100)) \^/ chess' 50
 
+myChess :: HeightMap
+myChess = toImage (maxX,maxY) (chess' 50)
 
+myStripes :: HeightMap
+myStripes = toImage (maxX, maxY) (stripes 60)
+
+black (x, y) = 0.0
 
 -- ------------ --
 -- Main program --
@@ -324,12 +336,14 @@ doubleChess' = zscale 0.8 (translate (25,25) (chess' 100)) \^/ chess' 50
 maxX = 800
 maxY = 400
 
+heightmap = myChess
+
 -- An example main program. Feel free to change it to print other images
 -- or perform other computations.
 main =
   do
-    writePPM "doubleChessPattern.ppm" (heightMap doubleChess) -- prints the pattern, unencoded
-    i <- sirds doubleChess 
+    writePPM "doubleChessPattern.ppm" (heightMap heightmap) -- prints the pattern, unencoded
+    i <- sirds heightmap
     writePPM "doubleChess.ppm" i -- prints encoded chess pattern SIRDS
     writePPM "doubleChessDecoded.ppm" (decode i) -- prints decoded chess pattern SIRDS
 
