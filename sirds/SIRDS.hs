@@ -69,14 +69,14 @@ validLine = all validRGB
 validImage :: Image -> Maybe (Int, Int)
 validImage [] = Just (0, 0)
 validImage image =
-  if all (\l -> length l == lineLength && validLine l) image
+  if all (\ l -> length l == lineLength && validLine l) image
     then Just (lineLength, numLines)
     else Nothing
   where
     lineLength = length (head image)
     numLines = length image
 
-validHeightLine = all (\x -> x >= 0.0 && x <= 1.0)
+validHeightLine = all (\ x -> x >= 0.0 && x <= 1.0)
 validHeightMap = all validHeightLine
 
 ppmHeader :: (Int,Int) -> String
