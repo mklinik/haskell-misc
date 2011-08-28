@@ -11,7 +11,7 @@ foldTerm val app lam (App l r) = app (foldTerm val app lam l) (foldTerm val app 
 foldTerm val app lam (Lam t)   = lam (foldTerm val app lam t)
 
 instance Show Term where
-  show = foldTerm show (\x y -> x ++ " " ++ y) (\t -> "\\.(" ++ t ++ ")")
+  show = foldTerm show (\x y -> "(" ++ x ++ " " ++ y ++ ")") (\t -> "\\.(" ++ t ++ ")")
 
 
 
@@ -32,8 +32,8 @@ y = App (Lam $ Lam $ (Var 1) `App` (Var 0) `App` (Var 0))
 -- church numerals
 zero  = Lam $ Lam $ Var 0
 one   = Lam $ Lam $ (Var 1) `App` (Var 0)
-two   = Lam $ Lam $ (Var 1) `App` (Var 1) `App` (Var 0)
-three = Lam $ Lam $ (Var 1) `App` (Var 1) `App` (Var 1) `App` (Var 0)
+two   = Lam $ Lam $ (Var 1) `App` ((Var 1) `App` (Var 0))
+three = Lam $ Lam $ (Var 1) `App` ((Var 1) `App` ((Var 1) `App` (Var 0)))
 
 int2church :: Int -> Term
 int2church n = Lam $ Lam $ int2church_ n $ Var 0
