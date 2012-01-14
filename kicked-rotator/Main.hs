@@ -21,26 +21,19 @@ scale width height (p, x) = (pScaled, xScaled)
     pScaled = floor $ p * (fromIntegral width) / pi2
     xScaled = floor $ x * (fromIntegral height) / pi2
 
-printRGB (RGB r g b) = do
-  putStr (show r)
-  putStr " "
-  putStr (show g)
-  putStr " "
-  putStr (show b)
-  putStr " "
+printRGB (RGB r g b) = (show r) ++ " " ++ (show g) ++ " " ++ (show b) ++ " "
 
-printPixel :: Map (Int, Int) RGB -> Int -> Int -> IO ()
-printPixel m x y =
-  case Map.lookup (x, y) m of
-    Nothing -> printRGB $ RGB 255 255 255
-    Just rgb -> printRGB rgb
+printPixel :: Map (Int, Int) RGB -> Int -> Int -> String
+printPixel m x y = case Map.lookup (x, y) m of
+  Nothing -> printRGB $ RGB 255 255 255
+  Just rgb -> printRGB rgb
 
-printPPM :: Map (Int, Int) RGB -> Int -> Int -> IO ()
-printPPM m width height = do
-  putStrLn "P3"
-  putStrLn $ (show width) ++ " " ++ (show height)
-  putStrLn "255"
-  sequence_ [ printPixel m x y | x <- [0..(width - 1)], y <- [0..(height - 1)] ]
+map2ppm :: Map (Int, Int) RGB -> Int -> Int -> String
+map2ppm m width height =
+  "P3\n" ++
+  (show width) ++ " " ++ (show height) ++ "\n" ++
+  "255\n" ++
+  (foldr (++) "" [ printPixel m x y | x <- [0..(width - 1)], y <- [0..(height - 1)] ])
 
 -- an infinite list of random colors
 randomColors :: [IO RGB]
@@ -62,4 +55,5 @@ main = do
   let startPoints = [(1,1), (2,2), (3,3), (4,4)]
   let lines = map (map (scale width height)) $ map (kickedRotator k) startPoints
   let foo = foldl (insertPixels iterations (RGB 0 0 255)) Map.empty lines
-  printPPM foo width height
+  putStr $ map2ppm foo width height
+  putStr ""
