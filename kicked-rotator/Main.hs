@@ -3,6 +3,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified System.Random as Random
 import Control.Monad
+import System.IO
 
 data RGB = RGB Int Int Int
 
@@ -36,24 +37,34 @@ map2ppm m width height =
   (foldr (++) "" [ printPixel m x y | x <- [0..(width - 1)], y <- [0..(height - 1)] ])
 
 -- an infinite list of random colors
-randomColors :: [IO RGB]
-randomColors =
-  (do r <- liftM (\x -> x `mod` 256) Random.randomIO
-      g <- liftM (\x -> x `mod` 256) Random.randomIO
-      b <- liftM (\x -> x `mod` 256) Random.randomIO
-      return $ RGB r g b
-  ) : randomColors
+randomColor :: IO RGB
+randomColor = do
+  r <- liftM (\x -> x `mod` 256) Random.randomIO
+  g <- liftM (\x -> x `mod` 256) Random.randomIO
+  b <- liftM (\x -> x `mod` 256) Random.randomIO
+  return $ RGB r g b
+
+randomPoint :: IO (Double, Double)
+randomPoint = do
+  x <- liftM (\x -> x * pi2) Random.randomIO
+  y <- liftM (\x -> x * pi2) Random.randomIO
+  return (x, y)
+
 
 insertPixels :: Int -> RGB -> Map (Int, Int) RGB -> [(Int, Int)] -> Map (Int, Int) RGB
 insertPixels iterations color m pixels = foldl (\map pixel -> Map.insert pixel color map) m (take iterations $ pixels)
 
 main = do
-  let iterations = 20000
+  let iterations = 10000
   let k = 0.971635
-  let width = 300
-  let height = 300
-  let startPoints = [(1,1), (2,2), (3,3), (4,4)]
+  let width = 600
+  let height = 600
+  startPoints <- replicateM 6 randomPoint
+  hPutStr stderr $ show startPoints
   let lines = map (map (scale width height)) $ map (kickedRotator k) startPoints
-  let foo = foldl (insertPixels iterations (RGB 0 0 255)) Map.empty lines
+  foo <- foldM (\m pixels -> do
+                   color <- randomColor
+                   return $ insertPixels iterations color m pixels
+                  ) Map.empty lines
   putStr $ map2ppm foo width height
   putStr ""
