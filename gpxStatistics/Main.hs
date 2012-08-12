@@ -10,6 +10,7 @@ import           Data.Map (Map)
 import           Data.Maybe
 import           Data.List (intercalate)
 
+main :: IO ()
 main = getArgs >>= mapM_ printGPXStatistics
 
 printGPXStatistics :: FilePath -> IO ()
@@ -42,6 +43,7 @@ humanReadableDiffTime diffTime = (printf "%02d:%02d:%02d" hours minutes seconds)
         (hours, remSecs)   = abstime `divMod` 3600
         (minutes, seconds) = remSecs `divMod` 60
 
+gpxStatistics :: GPX -> GPXStatistics
 gpxStatistics gpx = GPXStatistics dist time hist
   where dist = totalDistance trip
         time = totalTime trip
@@ -50,17 +52,17 @@ gpxStatistics gpx = GPXStatistics dist time hist
 
 -- concatenates all tracks and all segments to one big segment
 wholeTrip :: [Track] -> [Point]
-wholeTrip tracks = concatMap (\s -> points s) $ concatMap (\t -> segments t) tracks
+wholeTrip = concatMap (\s -> points s) . concatMap (\t -> segments t)
 
 mkSpeedHistogram :: [Point] -> SpeedHistogram
 mkSpeedHistogram = foldl (\m k -> Map.insertWith (+) k 1 m) Map.empty . roundSpeeds . pointsToSpeeds
 
 pointsToSpeeds :: [Point] -> [Maybe Double]
 pointsToSpeeds [] = []
-pointsToSpeeds points = reverse speeds
-  where (_, speeds) = foldl (\(lastPoint, speeds) thisPoint -> (thisPoint, speed lastPoint thisPoint : speeds))
-                            (head points, [])
-                            points
+pointsToSpeeds pts = reverse speeds
+  where (_, speeds) = foldl (\(lastPoint, soFar) thisPoint -> (thisPoint, speed lastPoint thisPoint : soFar))
+                            (head pts, [])
+                            pts
 
 -- convert from m/s to km/h and round to Int
 roundSpeeds :: [Maybe Double] -> [Int]
@@ -70,7 +72,7 @@ maxValue :: Integral b => Map a b -> b
 maxValue = Map.foldl max 0
 
 asciiArtHistogram :: Int -> Map Int Int -> String
-asciiArtHistogram width m = intercalate "\n" $ map oneLine $ filter (\(k, v) -> v > 1) assocs
+asciiArtHistogram width m = intercalate "\n" $ map oneLine $ filter (\(_, v) -> v > 1) assocs
   where maxVal = maxValue m
         assocs = Map.assocs m
-        oneLine (k, v) = (printf "%02d" k) ++ " " ++ replicate (v * 80 `div` maxVal) '*'
+        oneLine (k, v) = (printf "%02d" k) ++ " " ++ replicate (v * width `div` maxVal) '*'
