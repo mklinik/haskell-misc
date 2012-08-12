@@ -1,7 +1,6 @@
 module Main where
 
 import           Data.Time.Clock
-import           System.Locale
 import           Geo.GPX.Conduit
 import           Geo.Computations
 import           Text.Printf
