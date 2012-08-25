@@ -19,7 +19,22 @@ gpxInteract f file = do
 printGPXStatistics :: FilePath -> IO ()
 printGPXStatistics = gpxInteract gpxStatistics
 
+printGPXSpeeds :: FilePath -> IO ()
+printGPXSpeeds = gpxInteract gpxSpeeds
+
 type SpeedHistogram = Map Int Int
+
+newtype GPXSpeeds = GPXSpeeds [Double]
+
+instance Show GPXSpeeds where
+  show (GPXSpeeds []) = ""
+  show (GPXSpeeds (s:speeds)) = (show s) ++ "\n" ++ (show $ GPXSpeeds speeds)
+
+gpxSpeeds :: GPX -> GPXSpeeds
+gpxSpeeds gpx = GPXSpeeds speeds
+  where
+    trip = concatTracks $ tracks gpx
+    speeds = (map (* 3.6) . catMaybes . pointsToSpeeds) trip
 
 data GPXStatistics = GPXStatistics
   { statTotalDistance  :: Double -- in meters
@@ -47,11 +62,11 @@ gpxStatistics gpx = GPXStatistics dist time hist
   where dist = totalDistance trip
         time = totalTime trip
         hist = mkSpeedHistogram trip
-        trip = wholeTrip $ tracks gpx
+        trip = concatTracks $ tracks gpx
 
 -- concatenates all tracks and all segments to one big segment
-wholeTrip :: [Track] -> [Point]
-wholeTrip = concatMap (\s -> points s) . concatMap (\t -> segments t)
+concatTracks :: [Track] -> [Point]
+concatTracks = concatMap (\s -> points s) . concatMap (\t -> segments t)
 
 mkSpeedHistogram :: [Point] -> SpeedHistogram
 mkSpeedHistogram = foldl (\m k -> Map.insertWith (+) k 1 m) Map.empty . roundSpeeds . pointsToSpeeds
