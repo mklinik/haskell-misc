@@ -2,6 +2,7 @@ module Main where
 
 import Graphics.UI.Gtk
 import Graphics.Rendering.Cairo
+import System.Random
 
 hello :: (ButtonClass b) => b -> IO ()
 hello b = set b [buttonLabel := "Hello World"]
@@ -23,26 +24,29 @@ main = do
 
   widgetShowAll window
 
+  gen <- getStdGen
+
   drawWindow <- widgetGetDrawWindow canvas
   onExpose canvas (\x -> do
-    renderWithDrawable drawWindow myDraw
+    renderWithDrawable drawWindow (myDraw gen)
     return True)
 
   mainGUI
 
-myDraw :: Render ()
-myDraw = do
-  setSourceRGB 0 0 0
+myDraw :: RandomGen g => g -> Render ()
+myDraw gen = do
   setLineWidth 2
 
-  sequence $ concat [[ moveTo (scale x) (scale y)
-                     , lineTo (scale (x-1)) (scale (y+1))
-                     ]
-    | y <- [0..dimY], x <- [0..dimX]]
+  sequence $ concat [ [ moveTo (scale x) (scale y)
+                      , (liftIO randomIO) >>= \rand -> lineTo (scale (x+(direction rand))) (scale (y+1))
+                      ]
+    | y <- [0..dimY], x <- [0..dimX] ]
 
   stroke
 
   where
     dimX = 30
     dimY = 30
-    scale = \x -> x * 10
+    scale = (*15)
+    direction :: Int -> Double
+    direction x = (if x < 0 then (-1.0) else 1.0)
