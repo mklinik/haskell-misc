@@ -33,9 +33,14 @@ main = do
 myDraw :: Render ()
 myDraw = do
   setSourceRGB 0 0 0
-  setLineWidth 5
+  setLineWidth 3
 
-  moveTo 10 10
-  lineTo 20 20
+  let dimX = 30
+  let dimY = 30
+  let scale = 10
+
+  moveTo 0 0
+  sequence [lineTo (x*scale) (y*scale)
+    | y <- [0..dimY], x <- [0..dimX]]
 
   stroke
