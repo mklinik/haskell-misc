@@ -5,12 +5,17 @@ import Graphics.UI.Gtk
 hello :: (ButtonClass b) => b -> IO ()
 hello b = set b [buttonLabel := "Hello World"]
 
-main = do
+setup = do
   initGUI
   window <- windowNew
-  button <- buttonNew
-  set window [containerChild := button, containerBorderWidth := 10]
-  onClicked button (hello button)
   onDestroy window mainQuit
+  return window
+
+run window = do
   widgetShowAll window
   mainGUI
+
+main = do
+  window <- setup
+
+  run window
