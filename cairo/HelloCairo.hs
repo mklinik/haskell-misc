@@ -35,18 +35,18 @@ main = do
 
 myDraw :: RandomGen g => g -> Render ()
 myDraw gen = do
-  setLineWidth 2
+  setLineWidth 3
+  setLineCap LineCapRound
 
-  sequence $ concat [ [ moveTo (scale x) (scale y)
-                      , (liftIO randomIO) >>= \rand -> lineTo (scale (x+(direction rand))) (scale (y+1))
-                      ]
-    | y <- [0..dimY], x <- [0..dimX] ]
+  sequence [ liftIO randomIO >>= randomBox x y | y <- [0..dimY], x <- [0..dimX] ]
 
   stroke
 
   where
-    dimX = 30
-    dimY = 30
+    dimX = 40
+    dimY = 40
+
     scale = (*15)
-    direction :: Int -> Double
-    direction x = (if x < 0 then (-1.0) else 1.0)
+    randomBox x y rand = (if rand then boxA else boxB) x y
+    boxA x y = sequence [ moveTo (scale (x+1)) (scale y), lineTo (scale (x))   (scale (y+1)) ]
+    boxB x y = sequence [ moveTo (scale x)     (scale y), lineTo (scale (x+1)) (scale (y+1)) ]
