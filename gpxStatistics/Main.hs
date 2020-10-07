@@ -16,12 +16,15 @@ defaultOptions = Options
 
 options :: [OptDescr (Options -> Options)]
 options =
-  [ Option ['h'] ["histogram"]
+  [ Option ['a'] ["ascii"]
       (NoArg (\o -> o { mode = printGPXStatistics }))
       "print an ASCII histogram (default)"
   , Option ['s'] ["speed"]
       (NoArg (\o -> o { mode = printGPXSpeeds }))
       "print a list of speed values"
+  , Option ['h'] ["histogram"]
+      (NoArg (\o -> o { mode = printGPXHistogram }))
+      "print the histogram raw values"
   ]
 
 mkOptions :: [String] -> IO (Options, [String])

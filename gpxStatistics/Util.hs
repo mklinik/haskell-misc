@@ -22,6 +22,9 @@ printGPXStatistics = gpxInteract gpxStatistics
 printGPXSpeeds :: FilePath -> IO ()
 printGPXSpeeds = gpxInteract gpxSpeeds
 
+printGPXHistogram :: FilePath -> IO ()
+printGPXHistogram = gpxInteract gpxHistogram
+
 type SpeedHistogram = Map Int Int
 
 newtype GPXSpeeds = GPXSpeeds [Double]
@@ -63,6 +66,16 @@ gpxStatistics gpx = GPXStatistics dist time hist
         time = totalTime trip
         hist = mkSpeedHistogram trip
         trip = concatTracks $ tracks gpx
+
+newtype ShowHistogram = ShowHistogram SpeedHistogram
+
+instance Show ShowHistogram where
+  show (ShowHistogram h) = intercalate "\n" [ show speed ++ " " ++ show number | (speed, number) <- Map.assocs h]
+
+gpxHistogram :: GPX -> ShowHistogram
+gpxHistogram gpx = ShowHistogram $ mkSpeedHistogram trip
+  where
+    trip = concatTracks $ tracks gpx
 
 -- concatenates all tracks and all segments to one big segment
 concatTracks :: [Track] -> [Point]
