@@ -1,0 +1,24 @@
+name:                fp4dsls
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/fp4dsls#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2017 Author name here
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable fp4dsls
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  other-modules:       SetLangDeep
+                     , SetLangShallow
+                     , SetADT
+  build-depends:       base >= 4.7 && < 5
+                     , parsec
